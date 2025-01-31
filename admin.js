@@ -71,6 +71,40 @@ app.post("/admin/delete-some", async (req, res) => {
     }
 });
 
+// Route to fetch real users
+app.get("/admin/real-users", async (req, res) => {
+    const { adminKey } = req.query;
+
+    if (adminKey !== process.env.ADMIN_KEY) {
+        return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    try {
+        const realUsers = await Visitor.find({ fake: false }).sort({ timestamp: 1 });
+        res.status(200).json({ data: realUsers });
+    } catch (error) {
+        console.error("Error fetching real users:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
+
+// Route to fetch fake users
+app.get("/admin/fake-users", async (req, res) => {
+    const { adminKey } = req.query;
+
+    if (adminKey !== process.env.ADMIN_KEY) {
+        return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    try {
+        const fakeUsers = await Visitor.find({ fake: true }).sort({ timestamp: 1 });
+        res.status(200).json({ data: fakeUsers });
+    } catch (error) {
+        console.error("Error fetching fake users:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
+
 // Start the server
 const port = process.env.ADMIN_PORT || 4000;
 app.listen(port, () => console.log(`Admin backend running on port ${port}`));
